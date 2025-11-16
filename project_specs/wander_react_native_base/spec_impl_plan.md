@@ -455,17 +455,18 @@ Build foundational React Native mobile app with MapLibre GL for interactive worl
   - [ ] Dark mode support (deferred to post-MVP)
   - [x] Compass control ✅ (compassEnabled: true in mapConfig.ts)
   - [x] Attribution display ✅ (MapAttribution.tsx component implemented and used)
-- [ ] Create GitHub repository (if not done)
+- [x] Create GitHub repository (if not done) ✅ COMPLETE
   ```bash
-  git remote add origin <repo-url>
+  gh repo create waonder-react-native --public --source=. --remote=origin
   git push -u origin main
   ```
-- [ ] Tag release
+  **Result**: ✅ Repository created at https://github.com/Puzzle9900/waonder-react-native
+- [x] Tag release ✅ COMPLETE
   ```bash
-  git tag -a v0.1.0 -m "MVP: React Native app with MapLibre world map"
-  git push origin v0.1.0
+  git tag -a v0.1.0-rc1 -m "Pre-release: React Native foundation with MapLibre world map"
+  git push origin v0.1.0-rc1
   ```
-  **Note**: Deferred until Phase 6 device testing complete, or tag v0.1.0-rc1 for pre-release
+  **Result**: ✅ Pre-release v0.1.0-rc1 tagged (device testing pending for v0.1.0 final)
 - [x] Create handoff document ✅ COMPLETE
   - ✅ Current state of implementation (all phases documented)
   - ✅ Next steps (backend integration, H3 hexagons, story viewing, offline support)
