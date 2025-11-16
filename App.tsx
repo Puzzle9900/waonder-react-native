@@ -4,6 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
 import { MapView } from './components/Map/MapView';
 import { MapControls } from './components/Map/MapControls';
+import { MapAttribution } from './components/Map/MapAttribution';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 type LocationPermissionStatus = 'granted' | 'denied' | 'undetermined' | 'restricted';
 
@@ -18,15 +20,31 @@ export default function App() {
 
   const requestLocationPermission = async () => {
     try {
+      // First check if location services are enabled
+      const isEnabled = await Location.hasServicesEnabledAsync();
+      if (!isEnabled) {
+        console.warn('Location services are disabled on device');
+        setLocationPermission('restricted');
+        return;
+      }
+
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status === 'granted') {
         setLocationPermission('granted');
-        // Get initial location
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        setCurrentLocation(location);
+        // Get initial location with timeout and error handling
+        try {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+            timeInterval: 5000,
+            distanceInterval: 0,
+          });
+          setCurrentLocation(location);
+        } catch (locationError) {
+          console.error('Error getting initial location:', locationError);
+          // Permission granted but couldn't get location (GPS unavailable, timeout, etc.)
+          // We'll still set permission as granted so user can try location button
+        }
       } else {
         setLocationPermission('denied');
       }
@@ -45,12 +63,31 @@ export default function App() {
       try {
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
+          timeInterval: 10000, // 10 second timeout
+          distanceInterval: 0,
         });
+
+        // Check accuracy and warn if low (> 100m)
+        if (location.coords.accuracy && location.coords.accuracy > 100) {
+          console.warn(`Low GPS accuracy: ${location.coords.accuracy}m`);
+        }
+
         setCurrentLocation(location);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error getting current location:', error);
+
+        // Provide user-friendly error messages based on error type
+        let errorMessage = "Couldn't determine your location.";
+        if (error?.code === 'E_LOCATION_TIMEOUT') {
+          errorMessage = "Location request timed out. Try again.";
+        } else if (error?.code === 'E_LOCATION_UNAVAILABLE') {
+          errorMessage = "Location services unavailable. Enable GPS.";
+        }
+
+        // TODO: Show error message to user (could use Alert or toast)
+        console.log('User-friendly error:', errorMessage);
       }
-    } else if (locationPermission === 'denied') {
+    } else if (locationPermission === 'denied' || locationPermission === 'restricted') {
       // Prompt user to enable location in settings
       Linking.openSettings();
     }
@@ -66,10 +103,12 @@ export default function App() {
         </View>
       )}
 
-      {locationPermission === 'denied' && !isMapLoading && (
+      {(locationPermission === 'denied' || locationPermission === 'restricted') && !isMapLoading && (
         <View style={styles.permissionBanner}>
           <Text style={styles.permissionText}>
-            Location permission required. Enable in Settings.
+            {locationPermission === 'restricted'
+              ? 'Location services are disabled. Enable in device settings.'
+              : 'Location permission required. Enable in Settings.'}
           </Text>
           <TouchableOpacity
             style={styles.settingsButton}
@@ -80,14 +119,17 @@ export default function App() {
         </View>
       )}
 
-      <MapView
-        onMapReady={handleMapReady}
-        userLocation={currentLocation}
-      />
-      <MapControls
-        onLocationPress={handleLocationPress}
-        hasLocationPermission={locationPermission === 'granted'}
-      />
+      <ErrorBoundary fallbackMessage="Map failed to initialize. Please restart the app.">
+        <MapView
+          onMapReady={handleMapReady}
+          userLocation={currentLocation}
+        />
+        <MapControls
+          onLocationPress={handleLocationPress}
+          hasLocationPermission={locationPermission === 'granted'}
+        />
+        <MapAttribution />
+      </ErrorBoundary>
     </SafeAreaView>
   );
 }
