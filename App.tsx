@@ -7,8 +7,26 @@ import { MapControls } from './components/Map/MapControls';
 import { MapAttribution } from './components/Map/MapAttribution';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
+/**
+ * Location permission status type
+ * Maps to the various states of location permission on iOS and Android
+ */
 type LocationPermissionStatus = 'granted' | 'denied' | 'undetermined' | 'restricted';
 
+/**
+ * App Component
+ *
+ * Root component for the Waonder mobile application.
+ * Manages location permissions, map state, and coordinates child components.
+ *
+ * Features:
+ * - Automatic location permission request on mount
+ * - Permission status banners with settings deep-link
+ * - Error boundary wrapping for graceful error handling
+ * - Loading states during map initialization
+ *
+ * @returns Root application component
+ */
 export default function App() {
   const [isMapLoading, setIsMapLoading] = useState(true);
   const [locationPermission, setLocationPermission] = useState<LocationPermissionStatus>('undetermined');
@@ -18,6 +36,20 @@ export default function App() {
     requestLocationPermission();
   }, []);
 
+  /**
+   * Requests foreground location permission from the user
+   *
+   * Flow:
+   * 1. Checks if location services are enabled on device
+   * 2. Requests foreground permission (not background - known bugs in SDK 52)
+   * 3. If granted, attempts to get initial location
+   * 4. Sets permission status for UI rendering
+   *
+   * Error handling:
+   * - Disabled location services → 'restricted' status
+   * - Permission denied → 'denied' status
+   * - GPS unavailable/timeout → still 'granted' (user can retry with button)
+   */
   const requestLocationPermission = async () => {
     try {
       // First check if location services are enabled
@@ -54,10 +86,28 @@ export default function App() {
     }
   };
 
+  /**
+   * Callback fired when map finishes loading
+   * Hides the loading indicator overlay
+   */
   const handleMapReady = () => {
     setIsMapLoading(false);
   };
 
+  /**
+   * Handles location button press
+   *
+   * Behavior:
+   * - If permission granted: Gets current location and centers map
+   * - If permission denied/restricted: Opens device settings
+   *
+   * Error handling:
+   * - Timeout errors (10s limit)
+   * - GPS unavailable errors
+   * - Low accuracy warnings (>100m)
+   *
+   * @see requestLocationPermission for initial permission flow
+   */
   const handleLocationPress = async () => {
     if (locationPermission === 'granted') {
       try {

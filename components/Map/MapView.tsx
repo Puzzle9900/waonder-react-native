@@ -7,11 +7,39 @@ import { MAP_CONFIG } from '../../constants/mapConfig';
 // Set access token to null (OpenFreeMap doesn't require authentication)
 MapLibreGL.setAccessToken(null);
 
+/**
+ * Props for the MapView component
+ */
 interface MapViewProps {
+  /** Callback fired when the map finishes loading */
   onMapReady?: () => void;
+  /** Current user location object from expo-location */
   userLocation?: Location.LocationObject | null;
 }
 
+/**
+ * MapView Component
+ *
+ * Renders an interactive MapLibre GL map with OpenFreeMap tiles.
+ * Handles map initialization, user location display, and error states.
+ *
+ * Features:
+ * - Automatic camera animation to user location when it updates
+ * - Error handling with retry functionality for failed tile loads
+ * - User location marker with callout
+ * - Configurable via MAP_CONFIG constants
+ *
+ * @param props - MapView component props
+ * @returns Interactive map component with error handling
+ *
+ * @example
+ * ```tsx
+ * <MapView
+ *   onMapReady={() => console.log('Map loaded')}
+ *   userLocation={currentLocation}
+ * />
+ * ```
+ */
 export const MapView: React.FC<MapViewProps> = ({ onMapReady, userLocation }) => {
   const cameraRef = useRef<any>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -31,11 +59,19 @@ export const MapView: React.FC<MapViewProps> = ({ onMapReady, userLocation }) =>
     }
   }, [userLocation]);
 
+  /**
+   * Handles map tile loading errors
+   * Sets error state to display user-friendly error message with retry option
+   */
   const handleMapLoadError = () => {
     console.error('Map failed to load');
     setMapError("Map tiles couldn't load. Check your connection.");
   };
 
+  /**
+   * Retries map loading by clearing error state and incrementing retry count
+   * The retry count change forces map re-render via the key prop
+   */
   const handleRetry = () => {
     setMapError(null);
     setRetryCount(prev => prev + 1);
