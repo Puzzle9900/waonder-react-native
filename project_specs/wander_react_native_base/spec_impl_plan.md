@@ -451,10 +451,10 @@ Build foundational React Native mobile app with MapLibre GL for interactive worl
   - [ ] User can pan, zoom, rotate map ⏸️ (requires device testing)
   - [ ] Location permissions prompt on first launch ⏸️ (requires device testing)
   - [ ] Location button centers map on user ⏸️ (requires device testing)
-- [ ] Verify P1 requirements (if time permits)
-  - [ ] Dark mode support
-  - [ ] Compass control
-  - [ ] Attribution display
+- [x] Verify P1 requirements (code-level validation) ✅ PARTIAL
+  - [ ] Dark mode support (deferred to post-MVP)
+  - [x] Compass control ✅ (compassEnabled: true in mapConfig.ts)
+  - [x] Attribution display ✅ (MapAttribution.tsx component implemented and used)
 - [ ] Create GitHub repository (if not done)
   ```bash
   git remote add origin <repo-url>
