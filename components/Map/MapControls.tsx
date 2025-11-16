@@ -1,21 +1,57 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 
 interface MapControlsProps {
   onLocationPress?: () => void;
+  hasLocationPermission?: boolean;
 }
 
-export const MapControls: React.FC<MapControlsProps> = ({ onLocationPress }) => {
-  // Placeholder for map controls (zoom buttons, location button)
-  // Will be implemented in Phase 4
-  return <View style={styles.container} />;
+export const MapControls: React.FC<MapControlsProps> = ({
+  onLocationPress,
+  hasLocationPermission = false,
+}) => {
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={[
+          styles.button,
+          !hasLocationPermission && styles.buttonDisabled,
+        ]}
+        onPress={onLocationPress}
+        disabled={!hasLocationPermission && !onLocationPress}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.buttonIcon}>📍</Text>
+      </TouchableOpacity>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 30,
     right: 20,
     gap: 10,
+  },
+  button: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  buttonDisabled: {
+    backgroundColor: '#E0E0E0',
+    opacity: 0.6,
+  },
+  buttonIcon: {
+    fontSize: 24,
   },
 });
