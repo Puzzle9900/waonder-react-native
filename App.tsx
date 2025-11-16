@@ -123,19 +123,20 @@ export default function App() {
         }
 
         setCurrentLocation(location);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error getting current location:', error);
 
         // Provide user-friendly error messages based on error type
+        const locationError = error as { code?: string };
         let errorMessage = "Couldn't determine your location.";
-        if (error?.code === 'E_LOCATION_TIMEOUT') {
+        if (locationError?.code === 'E_LOCATION_TIMEOUT') {
           errorMessage = "Location request timed out. Try again.";
-        } else if (error?.code === 'E_LOCATION_UNAVAILABLE') {
+        } else if (locationError?.code === 'E_LOCATION_UNAVAILABLE') {
           errorMessage = "Location services unavailable. Enable GPS.";
         }
 
         // TODO: Show error message to user (could use Alert or toast)
-        console.log('User-friendly error:', errorMessage);
+        console.warn('User-friendly error:', errorMessage);
       }
     } else if (locationPermission === 'denied' || locationPermission === 'restricted') {
       // Prompt user to enable location in settings

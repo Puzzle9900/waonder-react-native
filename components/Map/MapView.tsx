@@ -41,6 +41,8 @@ interface MapViewProps {
  * ```
  */
 export const MapView: React.FC<MapViewProps> = ({ onMapReady, userLocation }) => {
+  // Using a generic ref type since MapLibre doesn't export Camera type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cameraRef = useRef<any>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
